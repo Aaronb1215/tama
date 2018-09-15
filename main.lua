@@ -71,17 +71,12 @@ end
 
 function home:draw()
 	love.graphics.print("hunger: " .. tama.hunger, 20, height/2 - 20)
-	-- love.graphics.print("sources: " .. love.audio.getSourceCount(), 20, height/2 - 50)
 	love.graphics.print("frame: " .. tama.baby:getFrame(), 20, height/2 - 50)
 	camera:attach()
 
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.draw(background, background:getWidth(), background:getHeight(), 0, 0.5, 0.5)
-	-- for i=0,width/20 do
-	-- 	for j=0, height/20 do
-	-- 		love.graphics.rectangle("line", 20 * j, 20 * i, 5, 5)
-	-- 	end
-	-- end
+
 	tama:draw()
 	camera:detach()
 end
