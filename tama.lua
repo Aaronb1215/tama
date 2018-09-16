@@ -40,9 +40,9 @@ function Tama:update(dt)
 		self.food:update(dt)
 	end
 
-	if self.time < 500 then
+	if self.time < 1000 then
 		self.time = self.time + 1
-	elseif self.time >= 500 then
+	elseif self.time >= 1000 then
 		self.time = 0
 		self:tick()
 	end
@@ -84,12 +84,13 @@ function Tama:eat()
 				self.eating = true 
 				self.baby:setTag("Eat") 
 				self.food:setFrame(1) 
-				self.food:play()
+				-- self.food:play()
 
 				Timer.during(5, function()
 						if self.eating then
 							if self.baby:getFrame() == 4 then
 								love.audio.play(sfx_eat)
+								self.food:nextFrame()
 							end
 						end
 					end)
