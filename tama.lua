@@ -107,6 +107,7 @@ function Tama:eat()
 				self.mode = "idle"
 				self.baby:setTag("Yes")
 				self.hunger = self.hunger - 5
+				self.full = self.full + 5
 			end)
 	elseif self.hunger < 1 then
 		self.baby:setTag("No")
@@ -116,8 +117,31 @@ function Tama:eat()
 end
 
 function Tama:poop()
+	self.mode = "pooping"
+	self.baby:setTag("Poop")
+	self.full = 0
+	Timer.during(3, function()
+						if self.mode == "pooping" then
+							if self.baby:getFrame() == 9 then
+								self.mode = "idle"
+								self.baby:setTag("Yes")
+								love.audio.play(sfx_poop)
+								table.insert(poops, Poop(self.x + love.math.random(-50, 50), self.y + love.math.random(-10, 10)))
+							end
+						end
+					end)
 end
 
 function Tama:tick()
 	self.hunger = self.hunger + 1
+
+	--TODO: Randomize when the pooping happens.
+	if self.full > 10 then
+		-- if math.floor(love.math.random(1, 3)) == 2 then
+		-- 	self:poop()
+		-- end
+		if self.mode == "idle" then
+			self:poop()
+		end
+	end
 end

@@ -97,6 +97,7 @@ function love.load()
 	sfx_no = love.audio.newSource("sfx/no.wav", "stream")
 	sfx_eat = love.audio.newSource("sfx/eat.wav", "stream")
 	sfx_beep = love.audio.newSource("sfx/beep.wav", "stream")
+	sfx_poop = love.audio.newSource("sfx/poop.wav", "stream")
 
 	camera = Camera(width/2, height/2)
 
@@ -130,7 +131,7 @@ function home:enter()
 	end
 	love.graphics.setBackgroundColor(0.6, 0.2, 0.6)
 	-- tama = Tama(width/2, height/2)
-	camera:zoom(1)
+	camera.scale = 3 
 end
 
 function home:update(dt)
@@ -142,25 +143,22 @@ function home:update(dt)
 end
 
 function home:draw()
-	love.graphics.print("hunger: " .. tama.hunger, 20, height/2 - 20)
-	love.graphics.print("frame: " .. tama.baby:getFrame(), 20, height/2 - 50)
 	camera:attach()
 
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.draw(background, background:getWidth(), background:getHeight(), 0, 0.5, 0.5)
 
-	tama:draw()
-
 	for k,v in ipairs(poops) do
 		v:draw()
 	end
+	tama:draw()
+
 
 	camera:detach()
+	love.graphics.print("hunger: " .. tama.hunger, 20, height/2 - 20)
+	love.graphics.print("fullness: " .. tama.full, 20, height/2 - 50)
+	love.graphics.print("frame: " .. tama.baby:getFrame(), 20, height/2 - 80)
 	icons:draw()
-	-- for k,v in ipairs(icons) do
-	-- 	v:draw()
-	-- end
-
 end
 
 function home:keypressed(key)
@@ -169,7 +167,7 @@ end
 function hatchery:enter()
 	love.graphics.setBackgroundColor(0.6, 0.3, 0.5)
 	tama = Tama(width/2, height/2)
-	camera:zoom(4)
+	camera.scale = 2
 end
 
 function hatchery:update(dt)
