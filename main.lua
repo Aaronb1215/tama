@@ -26,11 +26,12 @@ function love.load()
 
 
 	icons = {}
-	table.insert(icons, Icon(
+	fork = table.insert(icons, Icon(
 		width/10 * 1, 48, 
 		love.graphics.newImage("sprites/icons/fork.png"), 
 		function()
 			tama:eat()
+			-- love.audio.play(sfx_beep)
 		 end))
 	table.insert(icons, Icon(
 		width/10 * 3, 48,
@@ -93,6 +94,7 @@ function love.load()
 	sfx_no = love.audio.newSource("sfx/no.wav", "stream")
 	sfx_no = love.audio.newSource("sfx/no.wav", "stream")
 	sfx_eat = love.audio.newSource("sfx/eat.wav", "stream")
+	sfx_beep = love.audio.newSource("sfx/beep.wav", "stream")
 
 	camera = Camera(width/2, height/2)
 
