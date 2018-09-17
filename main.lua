@@ -6,6 +6,7 @@ Timer = require "hump.timer"
 Camera = require "hump.camera"
 
 require "tama"
+require "icon"
 
 home = {}
 hatchery = {}
@@ -22,6 +23,65 @@ function love.load()
 	baby = love.graphics.newImage("sprites/baby.png")
 	food = love.graphics.newImage("sprites/food.png")
 	background = love.graphics.newImage("sprites/background.png")
+
+
+	icons = {}
+	table.insert(icons, Icon(
+		width/10 * 1, 48, 
+		love.graphics.newImage("sprites/icons/fork.png"), 
+		function()
+			tama:eat()
+		 end))
+	table.insert(icons, Icon(
+		width/10 * 3, 48,
+		love.graphics.newImage("sprites/icons/ball.png"), 
+		function()
+			return
+		 end))
+	table.insert(icons, Icon(
+		width/10 * 5, 48, 
+		love.graphics.newImage("sprites/icons/discipline.png"), 
+		function()
+			return
+		 end))
+	table.insert(icons, Icon(
+		width/10 * 7, 48, 
+		love.graphics.newImage("sprites/icons/duck.png"), 
+		function()
+			return
+		 end))
+	table.insert(icons, Icon(
+		width/10 * 1, height/2 + 128, 
+		love.graphics.newImage("sprites/icons/attention.png"), 
+		function()
+			return
+		 end))
+	table.insert(icons, Icon(
+		width/10 * 3, height/2 + 128,
+		love.graphics.newImage("sprites/icons/light.png"), 
+		function()
+			return
+		 end))
+	table.insert(icons, Icon(
+		width/10 * 5, height/2 + 128, 
+		love.graphics.newImage("sprites/icons/medicine.png"), 
+		function()
+			return
+		 end))
+	table.insert(icons, Icon(
+		width/10 * 7, height/2 + 128, 
+		love.graphics.newImage("sprites/icons/health.png"), 
+		function()
+			return
+		 end))
+
+	function icons:draw()
+		for k,v in ipairs(self) do
+			v:draw()
+			-- love.graphics.rectangle("line", v.x, v.y, v.width, v.height)
+		end
+	end
+
 
 	sfx_hatch = love.audio.newSource("sfx/hatch.wav", "stream")
 	sfx_emerge = love.audio.newSource("sfx/emerge.wav", "stream")
@@ -42,6 +102,10 @@ function love.load()
 end
 
 function love.update(dt)
+	mouse = {}
+	mouse.x, mouse.y = love.mouse.getPosition()
+	mouse.width = 10
+	mouse.height = 10
 	Timer.update(dt)
 end
 
@@ -66,6 +130,10 @@ function home:enter()
 end
 
 function home:update(dt)
+	for k,v in ipairs(icons) do
+		v:update(dt)
+	end
+
 	tama:update(dt)
 end
 
@@ -79,6 +147,11 @@ function home:draw()
 
 	tama:draw()
 	camera:detach()
+	icons:draw()
+	-- for k,v in ipairs(icons) do
+	-- 	v:draw()
+	-- end
+
 end
 
 function home:keypressed(key)
@@ -96,7 +169,6 @@ function hatchery:update(dt)
 	end
 
 	if tama.egg:getSpeed() > 5 then
-		tama.egg:setSpeed(1)
 		tama:hatch()
 		Timer.after(3, function() tama.lifeStage = "baby" Gamestate.switch(home) end)
 	end
@@ -121,5 +193,26 @@ function hatchery:keypressed(key)
 	if key == "space" and not tama.hatched then
 		tama:hatch()
 		Timer.after(3, function() tama.lifeStage = "baby" Gamestate.switch(home) end)
+	end
+end
+
+function checkCollision(a, b)
+	local a_left = a.x
+	local a_right = a.x + a.width
+	local a_top = a.y
+	local a_bottom = a.y + a.height
+
+	local b_left = b.x
+	local b_right = b.x + b.width
+	local b_top = b.y
+	local b_bottom = b.y + b.height
+
+	if a_right > b_left and 
+	a_left < b_right and 
+	a_bottom > b_top and 
+	a_top < b_bottom then
+		return true
+	else
+		return false
 	end
 end

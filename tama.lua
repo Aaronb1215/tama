@@ -69,6 +69,7 @@ function Tama:keypressed(key)
 end
 
 function Tama:hatch()
+		self.egg:setSpeed(1)
 		self.egg:setTag("Hatch")
 		Timer.after(0.3, function() love.audio.play(sfx_hatch) end)
 		Timer.after(0.6, function() self.egg:setTag("Emerge") love.audio.play(sfx_emerge) end)
@@ -84,36 +85,15 @@ function Tama:eat()
 				self.eating = true 
 				self.baby:setTag("Eat") 
 				self.food:setFrame(1) 
-				-- self.food:play()
+				self.food:play()
 
 				Timer.during(5, function()
 						if self.eating then
 							if self.baby:getFrame() == 4 then
 								love.audio.play(sfx_eat)
-								self.food:nextFrame()
 							end
 						end
 					end)
-
-				--[[Todo: Change this to something that doesn't rely
-				on the exact, specific duration listed for each frame
-				in the JSON file. Advance frames manually?]]
-				-- Timer.script(function(wait) 
-				-- 		wait(0.5) 
-				-- 		love.audio.play(sfx_eat) 
-				-- 		wait(0.5) 
-				-- 		love.audio.play(sfx_eat) 
-				-- 		wait(0.5) 
-				-- 		love.audio.play(sfx_eat) 
-				-- 		wait(0.5) 
-				-- 		love.audio.play(sfx_eat) 
-				-- 		wait(0.5) 
-				-- 		love.audio.play(sfx_eat) 
-				-- 		wait(0.5)
-				-- 		love.audio.play(sfx_eat) 
-				-- 		wait(0.5)  
-				-- 		love.audio.play(sfx_eat) 
-				-- 	end)
 			end)
 
 		Timer.after(3.8, function() 
