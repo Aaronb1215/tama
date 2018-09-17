@@ -16,7 +16,7 @@ function Tama:new(x, y)
 	self.egg = peachy.new("sprites/egg.json", egg, "Idle")
 	self.baby = peachy.new("sprites/baby.json", baby, "Yes")
 	self.food = peachy.new("sprites/food.json", food, "cremepuff")
-	self.eating = false
+	self.mode = "idle"
 
 	self.hunger = 0
 	self.full = 0
@@ -37,7 +37,7 @@ function Tama:update(dt)
 
 	self.egg:update(dt)
 	self.baby:update(dt)
-	if self.eating then
+	if self.mode == "eating" then
 		self.food:update(dt)
 	end
 
@@ -56,7 +56,7 @@ function Tama:draw()
 		self.baby:draw(self.x, self.y, 0, 1, 1, self.baby:getWidth()/2, self.baby:getHeight()/2)
 	end
 
-	if self.eating then
+	if self.mode == "eating" then
 		self.food:draw(self.x + 16, self.y + 8, 0, 1, 1, self.food:getWidth()/2, self.food:getHeight()/2)
 	end
 
@@ -86,16 +86,16 @@ end
 
 function Tama:eat()
 	--Todo: Add food type parameter, vary effect based on how healthy.
-	if self.hunger >= 1 and self.lifeStage ~= "egg" and not self.eating then
+	if self.hunger >= 1 and self.lifeStage ~= "egg" and self.mode == "idle" then
 		self.baby:setTag("TurnRight")
 		Timer.after(0.6, function() 
-				self.eating = true 
+				self.mode = "eating" 
 				self.baby:setTag("Eat") 
 				self.food:setFrame(1) 
 				self.food:play()
 
 				Timer.during(5, function()
-						if self.eating then
+						if self.mode == "eating" then
 							if self.baby:getFrame() == 4 then
 								love.audio.play(sfx_eat)
 							end
@@ -104,7 +104,7 @@ function Tama:eat()
 			end)
 
 		Timer.after(3.8, function() 
-				self.eating = false
+				self.mode = "idle"
 				self.baby:setTag("Yes")
 				self.hunger = self.hunger - 5
 			end)

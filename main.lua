@@ -7,6 +7,7 @@ Camera = require "hump.camera"
 
 require "tama"
 require "icon"
+require "poop"
 
 home = {}
 hatchery = {}
@@ -22,11 +23,12 @@ function love.load()
 	egg = love.graphics.newImage("sprites/egg.png")
 	baby = love.graphics.newImage("sprites/baby.png")
 	food = love.graphics.newImage("sprites/food.png")
+	poop = love.graphics.newImage("sprites/poop.png")
 	background = love.graphics.newImage("sprites/background.png")
 
-
+	poops = {}
 	icons = {}
-	fork = table.insert(icons, Icon(
+	table.insert(icons, Icon(
 		width/10 * 1, 48, 
 		love.graphics.newImage("sprites/icons/fork.png"), 
 		function()
@@ -148,6 +150,11 @@ function home:draw()
 	love.graphics.draw(background, background:getWidth(), background:getHeight(), 0, 0.5, 0.5)
 
 	tama:draw()
+
+	for k,v in ipairs(poops) do
+		v:draw()
+	end
+
 	camera:detach()
 	icons:draw()
 	-- for k,v in ipairs(icons) do
