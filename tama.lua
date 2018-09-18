@@ -21,6 +21,7 @@ function Tama:new(x, y)
 	self.hunger = 0
 	self.full = 0
 	self.time = 0
+	self.health = 100
 end
 
 function Tama:update(dt)
@@ -41,15 +42,26 @@ function Tama:update(dt)
 		self.food:update(dt)
 	end
 
-	if self.time < 100 then
+	if self.time < 100 and self.mode ~= "dead" then
 		self.time = self.time + 1
-	elseif self.time >= 100 then
+	elseif self.time >= 100 and self.mode ~= "dead" then
 		self.time = 0
 		self:tick()
 	end
+
+	if self.mode == "idle" and self.health < 50 then
+		self.baby:setTag("Unhappy")
+	end
+
+
 end
 
 function Tama:draw()
+	if not lightOn then
+		love.graphics.setColor(0.2, 0.2, 0.6)
+	else
+		love.graphics.setColor(1, 1, 1)
+	end
 	if self.lifeStage == "egg" then
 		self.egg:draw(self.x, self.y, 0, 1, 1, self.egg:getWidth()/2, self.egg:getHeight()/2)
 	elseif self.lifeStage == "baby" then
@@ -65,13 +77,22 @@ function Tama:draw()
 		love.graphics.rectangle("fill", self.x - self.width/2 + 2 * i, self.y + self.height + 20, 1, 4)
 		love.graphics.setColor(1, 1, 1, 1)
 	end
+	love.graphics.setColor(1, 1, 1, 1)
 
 	
 end
 
 function Tama:keypressed(key)
-	if key == "space" and self.lifeStage == "baby" and not self.eating then
-		self:eat() --Todo: Add a button in-game for doing this instead.
+	if key == "space" and self.lifeStage == "baby" and self.mode == "idle" then
+		self:eat("broccoli") --Todo: Add a button in-game for doing this instead.
+	end
+
+	if key == "up" then 
+		self.full = self.full + 30
+	end
+
+	if key == "down" then 
+		self.health = self.health - 10
 	end
 end
 
@@ -84,13 +105,15 @@ function Tama:hatch()
 		self.hatched = true
 end
 
-function Tama:eat()
+function Tama:eat(type)
 	--Todo: Add food type parameter, vary effect based on how healthy.
+	local food = type or "cremepuff"
 	if self.hunger >= 1 and self.lifeStage ~= "egg" and self.mode == "idle" then
 		self.baby:setTag("TurnRight")
 		Timer.after(0.6, function() 
 				self.mode = "eating" 
 				self.baby:setTag("Eat") 
+				self.food:setTag(food)
 				self.food:setFrame(1) 
 				self.food:play()
 
@@ -103,11 +126,22 @@ function Tama:eat()
 					end)
 			end)
 
-		Timer.after(3.8, function() 
+		Timer.after(3.7, function() 
 				self.mode = "idle"
 				self.baby:setTag("Yes")
-				self.hunger = self.hunger - 5
-				self.full = self.full + 5
+				if food == "cremepuff" then
+					self.hunger = self.hunger - 5
+					self.full = self.full + 5
+					self.health = self.health - 5
+				elseif food == "broccoli" then
+					self.hunger = self.hunger - 10
+					self.full = self.full + 10
+					if self.health < 95 then
+						self.health = self.health + 5
+					else
+						self.health = 100
+					end
+				end
 			end)
 	elseif self.hunger < 1 then
 		self.baby:setTag("No")
@@ -119,29 +153,78 @@ end
 function Tama:poop()
 	self.mode = "pooping"
 	self.baby:setTag("Poop")
-	self.full = 0
+
 	Timer.during(3, function()
 						if self.mode == "pooping" then
 							if self.baby:getFrame() == 9 then
 								self.mode = "idle"
 								self.baby:setTag("Yes")
 								love.audio.play(sfx_poop)
-								table.insert(poops, Poop(self.x + love.math.random(-50, 50), self.y + love.math.random(-10, 10)))
+								local newPoop = Poop(self.x + love.math.random(-50, 50), self.y + love.math.random(-5, 20))
+								table.insert(poops, newPoop)
+								if newPoop.x - self.x >= 0 then newPoop.x = newPoop.x + 20 end
+								if newPoop.x - self.x < 0 then newPoop.x = newPoop.x - 20 end
+								self.full = self.full - 15
 							end
 						end
 					end)
 end
 
+function Tama:die()
+	while #icons >= 1 do
+		table.remove(icons, 1)
+	end
+
+	self.mode = "dead"
+	self.baby:setTag("Death")
+	Timer.during(5, function() if self.baby:getFrame() == self.baby:getLastFrame() then self.baby:stop(true) end end)
+	Timer.after(3, function() love.audio.play(sfx_gameover) end)
+	Timer.after(4, function() Timer.during(20, function() camera.scale = camera.scale * 0.999 end) end)
+	Timer.after(31, function() lightOn = false end)
+	Timer.after(34, function () Timer.during(5, function() love.audio.setVolume(love.audio.getVolume() - 0.01) end) end)
+	Timer.after(36, function() love.event.quit() end)
+end
+
 function Tama:tick()
-	self.hunger = self.hunger + 1
+	
+	if self.hunger < 100 then
+		self.hunger = self.hunger + 1
+	end
 
 	--TODO: Randomize when the pooping happens.
-	if self.full > 10 then
-		-- if math.floor(love.math.random(1, 3)) == 2 then
-		-- 	self:poop()
-		-- end
-		if self.mode == "idle" then
+	if self.full > 10 and self.mode == "idle" then
+		if math.floor(love.math.random(1, 3)) == 2 then
 			self:poop()
 		end
+		-- if self.mode == "idle" then
+		-- 	self:poop()
+		-- end
 	end
+
+	local previousHealth = self.health
+	--Health downs.
+	self.health = self.health - #poops
+	if self.hunger > 50 then self.health = self.health - 1 end
+	if self.hunger > 70 then self.health = self.health - 1 end
+	if self.hunger > 90 then self.health = self.health - 1 end
+	if self.hunger == 100 then
+		-- self.mode = "starving" --TODO: Implement starving.
+		return
+	end
+
+	--Health ups.
+	if self.health < 100 then
+		if self.hunger > 30 then self.health = self.health + 1 end
+		if #poops == 0 then self.health = self.health + 1 end
+	end
+
+
+	--DEATH TRIGGER--
+	if self.mode == "idle" and self.health <= 0 then
+		self:die()
+		Timer.during(3, function() if self.mode == "dead" and self.baby:getFrame() == 6 then love.audio.play(sfx_want) end end)
+		-- love.audio.play(sfx_want)
+	end
+
+	if self.mode == "idle" and self.health < previousHealth then love.audio.play(sfx_hurt) end
 end

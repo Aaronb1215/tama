@@ -18,6 +18,8 @@ height = love.graphics.getHeight()
 love.graphics.setDefaultFilter("nearest", "nearest")
 success = love.window.setMode(640, 480)
 
+lightOn = true
+
 
 function love.load()
 	egg = love.graphics.newImage("sprites/egg.png")
@@ -32,7 +34,11 @@ function love.load()
 		width/10 * 1, 48, 
 		love.graphics.newImage("sprites/icons/fork.png"), 
 		function()
-			tama:eat()
+			if mouseButton == "left" then
+				tama:eat("cremepuff")
+			else
+				tama:eat("broccoli")
+			end
 			-- love.audio.play(sfx_beep)
 		 end))
 	table.insert(icons, Icon(
@@ -51,7 +57,10 @@ function love.load()
 		width/10 * 7, 48, 
 		love.graphics.newImage("sprites/icons/duck.png"), 
 		function()
-			return
+			love.audio.play(sfx_flush)
+			while #poops >= 1 do
+				table.remove(poops, 1)
+			end
 		 end))
 	table.insert(icons, Icon(
 		width/10 * 1, height/2 + 128, 
@@ -63,7 +72,8 @@ function love.load()
 		width/10 * 3, height/2 + 128,
 		love.graphics.newImage("sprites/icons/light.png"), 
 		function()
-			return
+			love.audio.play(sfx_light)
+			if lightOn == true then lightOn = false else lightOn = true end
 		 end))
 	table.insert(icons, Icon(
 		width/10 * 5, height/2 + 128, 
@@ -98,6 +108,10 @@ function love.load()
 	sfx_eat = love.audio.newSource("sfx/eat.wav", "stream")
 	sfx_beep = love.audio.newSource("sfx/beep.wav", "stream")
 	sfx_poop = love.audio.newSource("sfx/poop.wav", "stream")
+	sfx_flush = love.audio.newSource("sfx/flush.wav", "stream")
+	sfx_boing = love.audio.newSource("sfx/boing.wav", "stream")
+	sfx_light = love.audio.newSource("sfx/light.wav", "stream")
+	sfx_gameover = love.audio.newSource("sfx/gameover.mp3", "stream")
 
 	camera = Camera(width/2, height/2)
 
@@ -111,6 +125,8 @@ function love.update(dt)
 	mouse.x, mouse.y = love.mouse.getPosition()
 	mouse.width = 10
 	mouse.height = 10
+	if love.mouse.isDown(1) == true then mouseButton = "left" end
+	if love.mouse.isDown(2) then mouseButton = "right" end
 	Timer.update(dt)
 end
 
@@ -147,17 +163,33 @@ function home:draw()
 
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.draw(background, background:getWidth(), background:getHeight(), 0, 0.5, 0.5)
+	love.graphics.setColor(0, 0, 0)
+	love.graphics.rectangle("line", background:getWidth(), background:getHeight(), 
+								background:getWidth()/2, background:getHeight()/2)
+	love.graphics.setColor(1, 1, 1)
 
+	lume.sort(poops, function(a, b) return a.y < b.y end)
 	for k,v in ipairs(poops) do
 		v:draw()
+	end
+	if not lightOn then
+		love.graphics.setColor(0, 0, 0, 0.9)
+		love.graphics.rectangle("fill", 0, 0, 3000, 3000)
+		love.graphics.setColor(1, 1, 1)
 	end
 	tama:draw()
 
 
 	camera:detach()
+	love.graphics.print("health: " .. tama.health, 20, height/2 + 10)
 	love.graphics.print("hunger: " .. tama.hunger, 20, height/2 - 20)
 	love.graphics.print("fullness: " .. tama.full, 20, height/2 - 50)
 	love.graphics.print("frame: " .. tama.baby:getFrame(), 20, height/2 - 80)
+	love.graphics.print("mouse_x: " .. mouse.x, 20, height/2 - 110)
+	love.graphics.print("mouse_y: " .. mouse.y, 20, height/2 - 140)
+	local lightTest = "what"
+	if lightOn then lightTest = "true" else lightTest = "false" end
+	love.graphics.print("lightOn: " .. lightTest, 20, height/2 - 170)
 	icons:draw()
 end
 

@@ -221,6 +221,10 @@ function peachy:nextFrame()
   self.frameTimer = cron.after(self.frame.duration, self.nextFrame, self)
 end
 
+function peachy:getLastFrame()
+  return #self.tag.frames
+end
+
 --- Check for callbacks
 function peachy:call_onLoop()
   if self.callback_onLoop then self.callback_onLoop(unpack(self.args_onLoop)) end
