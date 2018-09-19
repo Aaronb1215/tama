@@ -19,6 +19,7 @@ love.graphics.setDefaultFilter("nearest", "nearest")
 success = love.window.setMode(640, 480)
 
 lightOn = true
+devMode = false
 
 
 function love.load()
@@ -34,12 +35,11 @@ function love.load()
 		width/10 * 1, 48, 
 		love.graphics.newImage("sprites/icons/fork.png"), 
 		function()
-			if mouseButton == "left" then
+			if mouseButton == "left" and tama.mode == "idle" then
 				tama:eat("cremepuff")
-			else
+			elseif mouseButton == "right" and tama.mode == "idle" then
 				tama:eat("broccoli")
 			end
-			-- love.audio.play(sfx_beep)
 		 end))
 	table.insert(icons, Icon(
 		width/10 * 3, 48,
@@ -58,8 +58,10 @@ function love.load()
 		love.graphics.newImage("sprites/icons/duck.png"), 
 		function()
 			love.audio.play(sfx_flush)
+			if tama.mode == "pooping" then tama.mode = "idle" end
 			while #poops >= 1 do
 				table.remove(poops, 1)
+				tama:react("Happy")
 			end
 		 end))
 	table.insert(icons, Icon(
@@ -85,7 +87,7 @@ function love.load()
 		width/10 * 7, height/2 + 128, 
 		love.graphics.newImage("sprites/icons/health.png"), 
 		function()
-			return
+			if devMode then devMode = false else devMode = true end
 		 end))
 
 	function icons:draw()
@@ -181,19 +183,24 @@ function home:draw()
 
 
 	camera:detach()
-	love.graphics.print("health: " .. tama.health, 20, height/2 + 10)
-	love.graphics.print("hunger: " .. tama.hunger, 20, height/2 - 20)
-	love.graphics.print("fullness: " .. tama.full, 20, height/2 - 50)
-	love.graphics.print("frame: " .. tama.baby:getFrame(), 20, height/2 - 80)
-	love.graphics.print("mouse_x: " .. mouse.x, 20, height/2 - 110)
-	love.graphics.print("mouse_y: " .. mouse.y, 20, height/2 - 140)
-	local lightTest = "what"
-	if lightOn then lightTest = "true" else lightTest = "false" end
-	love.graphics.print("lightOn: " .. lightTest, 20, height/2 - 170)
+	if devMode then
+		love.graphics.print("energy: " .. tama.energy, 20, height/2 + 40)
+		love.graphics.print("health: " .. tama.health, 20, height/2 + 10)
+		love.graphics.print("hunger: " .. tama.hunger, 20, height/2 - 20)
+		love.graphics.print("fullness: " .. tama.full, 20, height/2 - 50)
+		love.graphics.print("frame: " .. tama.baby:getFrame(), 20, height/2 - 80)
+		love.graphics.print("mouse_x: " .. mouse.x, 20, height/2 - 110)
+		love.graphics.print("mouse_y: " .. mouse.y, 20, height/2 - 140)
+		local lightTest = "what"
+		if lightOn then lightTest = "true" else lightTest = "false" end
+		love.graphics.print("lightOn: " .. lightTest, 20, height/2 - 170)
+		love.graphics.print("mode: " .. tama.mode, 20, height/2 - 200)
+	end
 	icons:draw()
 end
 
 function home:keypressed(key)
+	if key == "`" then if devMode then devMode = false else devMode = true end end
 end
 
 function hatchery:enter()

@@ -116,9 +116,9 @@ function peachy:setTag(tag)
   self:nextFrame()
 end
 
--- function peachy:getTag()
---   return self.tagName
--- end
+function peachy:getTag()
+  return self.tagName
+end
 
 --- Jump to a particular frame index (1-based indexes) in the current animation.
 --

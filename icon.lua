@@ -41,5 +41,5 @@ end
 
 function Icon:timeOut()
 	self.pressable = false
-	Timer.after(0.2, function() self.pressable = true end)
+	Timer.after(0.5, function() self.pressable = true end)
 end
