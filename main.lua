@@ -190,6 +190,7 @@ function home:draw()
 
 	camera:detach()
 	if devMode then
+		love.graphics.print("happiness: " .. tama.happiness, 20, height/2 + 70)
 		love.graphics.print("energy: " .. tama.energy, 20, height/2 + 40)
 		love.graphics.print("health: " .. tama.health, 20, height/2 + 10)
 		love.graphics.print("hunger: " .. tama.hunger, 20, height/2 - 20)
@@ -263,8 +264,8 @@ function play:enter()
 	arrow, 
 	function()
 		myAnswer = "Left"
-		love.audio.stop()
 		Timer.during(0.5, function() tamaplay:setTag(correctAnswer) end)
+		Timer.after(0.5, function() playFinish() end)
 	 end, false))
 
 	rightArrow = table.insert(arrows, Icon(
@@ -272,8 +273,8 @@ function play:enter()
 	arrow_right, 
 	function()
 		myAnswer = "Right"
-		love.audio.stop()
 		Timer.during(0.5, function() tamaplay:setTag(correctAnswer) end)
+		Timer.after(0.5, function() playFinish() end)
 	 end, false))
 end
 
@@ -282,20 +283,22 @@ function play:update(dt)
 	for k,v in ipairs(arrows) do
 		v:update(dt)
 	end
+end
 
-	if myAnswer ~= nil then
-		tamaplay:setSpeed(1)
-		Timer.after(0.5, function() 
-			if myAnswer == correctAnswer then 
-				tamaplay:setTag("Happy")
-				love.audio.play(sfx_happy)
-				Timer.after(3, function() Gamestate.switch(home) end)
-			else
-				tamaplay:setTag("Annoyed")
-				love.audio.play(sfx_hurt)
-				Timer.after(3, function() Gamestate.switch(home) end)
-			end
-		end)
+function playFinish()
+	tamaplay:setSpeed(1)
+	love.audio.stop()
+
+	if myAnswer == correctAnswer then 
+		tamaplay:setTag("Happy")
+		love.audio.play(sfx_happy)
+		tama.happiness = tama.happiness + 10
+		Timer.after(3, function() Gamestate.switch(home) end)
+	else
+		tamaplay:setTag("Annoyed")
+		love.audio.play(sfx_hurt)
+		tama.happiness = tama.happiness + 5
+		Timer.after(3, function() Gamestate.switch(home) end)
 	end
 end
 
@@ -305,13 +308,16 @@ function play:draw()
 		v:draw()
 	end
 	tamaplay:draw(320, 240, 0, 3, 3, 16, 16)
+	love.graphics.print(tamaplay:getTag(), 0, 10)
 end
 
 function play:keypressed(key)
 	if key == "space" then Gamestate.switch(home) end
 
-	if key == "right" or key == "left" then
-		myAnswer = key 
+	if key == "right" or key == "left" and myAnswer == nil then
+		myAnswer = firstToUpper(key) 
+		Timer.during(0.5, function() tamaplay:setTag(correctAnswer) end)
+		Timer.after(0.6, function() playFinish() end)
 	end
 end
 
@@ -334,4 +340,8 @@ function checkCollision(a, b)
 	else
 		return false
 	end
+end
+
+function firstToUpper(str)
+    return (str:gsub("^%l", string.upper))
 end

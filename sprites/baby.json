@@ -736,7 +736,7 @@
    { "name": "Happy", "from": 21, "to": 23, "direction": "pingpong" },
    { "name": "TurnLeft", "from": 24, "to": 30, "direction": "forward" },
    { "name": "LeftRight", "from": 31, "to": 33, "direction": "pingpong" },
-   { "name": "Left", "from": 31, "to": 32, "direction": "forward" },
+   { "name": "Left", "from": 31, "to": 31, "direction": "forward" },
    { "name": "Right", "from": 33, "to": 33, "direction": "forward" },
    { "name": "ShakeHead", "from": 34, "to": 45, "direction": "pingpong" },
    { "name": "TurnRight", "from": 40, "to": 45, "direction": "forward" },
