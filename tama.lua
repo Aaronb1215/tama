@@ -53,7 +53,7 @@ function Tama:update(dt)
 
 	if self.time < 100 and self.mode ~= "dead" then
 		self.time = self.time + 1
-	elseif self.time >= 100 and self.mode ~= "dead" then
+	elseif self.time >= 100 and self.mode == "idle" then
 		self.time = 0
 		self:tick()
 	end
@@ -183,6 +183,7 @@ function Tama:poop()
 							end
 						end
 					end)
+	Timer.after(4, function() if self.mode == "pooping" then self.mode = "idle" end end)
 end
 
 function Tama:die()
@@ -202,9 +203,10 @@ end
 
 function Tama:react(reaction)
 	if self.mode == "idle" then
+		self.mode = "reacting"
 		local currentTag = self.baby:getTag()
 		Timer.during(1.5, function() if reaction ~= currentTag then self.baby:setTag(reaction) end end)
-		Timer.after(1.5, function() self.baby:setTag(currentTag) end)
+		Timer.after(1.5, function() self.baby:setTag(currentTag) self.mode = "idle" end)
 	else
 		return
 	end

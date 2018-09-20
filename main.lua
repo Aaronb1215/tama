@@ -11,6 +11,7 @@ require "poop"
 
 home = {}
 hatchery = {}
+play = {}
 
 width = love.graphics.getWidth()
 height = love.graphics.getHeight()
@@ -27,7 +28,10 @@ function love.load()
 	baby = love.graphics.newImage("sprites/baby.png")
 	food = love.graphics.newImage("sprites/food.png")
 	poop = love.graphics.newImage("sprites/poop.png")
+	arrow = love.graphics.newImage("sprites/arrow.png")
+	arrow_right = love.graphics.newImage("sprites/arrow_right.png")
 	background = love.graphics.newImage("sprites/background.png")
+	background_game = love.graphics.newImage("sprites/background_game.png")
 
 	poops = {}
 	icons = {}
@@ -45,7 +49,7 @@ function love.load()
 		width/10 * 3, 48,
 		love.graphics.newImage("sprites/icons/ball.png"), 
 		function()
-			return
+			Gamestate.switch(play)
 		 end))
 	table.insert(icons, Icon(
 		width/10 * 5, 48, 
@@ -112,8 +116,10 @@ function love.load()
 	sfx_poop = love.audio.newSource("sfx/poop.wav", "stream")
 	sfx_flush = love.audio.newSource("sfx/flush.wav", "stream")
 	sfx_boing = love.audio.newSource("sfx/boing.wav", "stream")
+	sfx_happy = love.audio.newSource("sfx/happy.wav", "stream")
 	sfx_light = love.audio.newSource("sfx/light.wav", "stream")
 	sfx_gameover = love.audio.newSource("sfx/gameover.mp3", "stream")
+	sfx_gamemusic = love.audio.newSource("sfx/gamemusic.mp3", "stream")
 
 	camera = Camera(width/2, height/2)
 
@@ -239,6 +245,73 @@ function hatchery:keypressed(key)
 	if key == "space" and not tama.hatched then
 		tama:hatch()
 		Timer.after(3, function() tama.lifeStage = "baby" Gamestate.switch(home) end)
+	end
+end
+
+function play:enter()
+	arrows = {}
+	correctAnswer = lume.randomchoice({"Left", "Right"})
+	myAnswer = nil
+	answered = false
+	camera.scale = 1.0
+	tamaplay = peachy.new("sprites/baby.json", baby, "Right", 0.6)
+	tamaplay:setTag("LeftRight")
+	love.audio.play(sfx_gamemusic)
+
+	leftArrow = table.insert(arrows, Icon(
+	32, 240, 
+	arrow, 
+	function()
+		myAnswer = "Left"
+		love.audio.stop()
+		Timer.during(0.5, function() tamaplay:setTag(correctAnswer) end)
+	 end, false))
+
+	rightArrow = table.insert(arrows, Icon(
+	640 - 32, 240, 
+	arrow_right, 
+	function()
+		myAnswer = "Right"
+		love.audio.stop()
+		Timer.during(0.5, function() tamaplay:setTag(correctAnswer) end)
+	 end, false))
+end
+
+function play:update(dt)
+	tamaplay:update(dt)
+	for k,v in ipairs(arrows) do
+		v:update(dt)
+	end
+
+	if myAnswer ~= nil then
+		tamaplay:setSpeed(1)
+		Timer.after(0.5, function() 
+			if myAnswer == correctAnswer then 
+				tamaplay:setTag("Happy")
+				love.audio.play(sfx_happy)
+				Timer.after(3, function() Gamestate.switch(home) end)
+			else
+				tamaplay:setTag("Annoyed")
+				love.audio.play(sfx_hurt)
+				Timer.after(3, function() Gamestate.switch(home) end)
+			end
+		end)
+	end
+end
+
+function play:draw()
+	love.graphics.draw(background_game, 0, 0, 0, 2, 2)
+	for k,v in ipairs(arrows) do
+		v:draw()
+	end
+	tamaplay:draw(320, 240, 0, 3, 3, 16, 16)
+end
+
+function play:keypressed(key)
+	if key == "space" then Gamestate.switch(home) end
+
+	if key == "right" or key == "left" then
+		myAnswer = key 
 	end
 end
 

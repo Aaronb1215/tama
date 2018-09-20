@@ -1,13 +1,14 @@
 Icon = Object:extend()
 
-function Icon:new(x, y, image, fn)
+function Icon:new(x, y, image, fn, bg_on)
 	self.x = x
 	self.y = y
 	self.image = image
-	self.width = 16
-	self.height = 16
+	self.width = image:getWidth()
+	self.height = image:getHeight()
 	self.pressable = true
 	self.pressed = fn --or function() love.audio.play(sfx_beep) end
+	self.background = bg_on or true
 end
 
 function Icon:update(dt)
@@ -24,10 +25,12 @@ function Icon:update(dt)
 end
 
 function Icon:draw()
-	love.graphics.setColor(0.8, 0.3, 0.6)
-	love.graphics.rectangle("fill", self.x - 18, self.y - 18, self.width * 2 + 4, self.height * 2 + 4, 8, 8, 8)
-	love.graphics.setColor(0, 0, 0)
-	love.graphics.rectangle("line", self.x - 18, self.y - 18, self.width * 2 + 4, self.height * 2 + 4, 8, 8, 8)
+	if self.background == true then
+		love.graphics.setColor(0.8, 0.3, 0.6)
+		love.graphics.rectangle("fill", self.x - 18, self.y - 18, self.width * 2 + 4, self.height * 2 + 4, 8, 8, 8)
+		love.graphics.setColor(0, 0, 0)
+		love.graphics.rectangle("line", self.x - 18, self.y - 18, self.width * 2 + 4, self.height * 2 + 4, 8, 8, 8)
+	end
 
 	if checkCollision(self, mouse) and self.pressable then
 		love.graphics.setColor(1, 1, 1, 1)
