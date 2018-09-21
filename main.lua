@@ -12,6 +12,7 @@ require "poop"
 home = {}
 hatchery = {}
 play = {}
+doctor = {}
 
 width = love.graphics.getWidth()
 height = love.graphics.getHeight()
@@ -20,7 +21,7 @@ love.graphics.setDefaultFilter("nearest", "nearest")
 success = love.window.setMode(640, 480)
 
 lightOn = true
-devMode = false
+devMode = true
 
 
 function love.load()
@@ -55,7 +56,17 @@ function love.load()
 		width/10 * 5, 48, 
 		love.graphics.newImage("sprites/icons/discipline.png"), 
 		function()
-			return
+			tama.happiness = tama.happiness - 10
+			if tama.happiness >= 50 then 
+				tama:react("Annoyed")
+				love.audio.play(sfx_no)
+			elseif tama.happiness < 50 and tama.happiness >= 40 then 
+				tama:react("Angry")
+				love.audio.play(sfx_no)
+			elseif tama.happiness < 40 and tama.happiness >= 0 then 
+				tama:react("Unhappy") 
+				love.audio.play(sfx_hurt)
+			end
 		 end))
 	table.insert(icons, Icon(
 		width/10 * 7, 48, 
@@ -250,6 +261,7 @@ function hatchery:keypressed(key)
 end
 
 function play:enter()
+	tama.energy = tama.energy - 5
 	arrows = {}
 	correctAnswer = lume.randomchoice({"Left", "Right"})
 	myAnswer = nil
@@ -264,7 +276,7 @@ function play:enter()
 	arrow, 
 	function()
 		myAnswer = "Left"
-		Timer.during(0.5, function() tamaplay:setTag(correctAnswer) end)
+		tamaplay:setTag(correctAnswer)
 		Timer.after(0.5, function() playFinish() end)
 	 end, false))
 
@@ -273,7 +285,7 @@ function play:enter()
 	arrow_right, 
 	function()
 		myAnswer = "Right"
-		Timer.during(0.5, function() tamaplay:setTag(correctAnswer) end)
+		tamaplay:setTag(correctAnswer)
 		Timer.after(0.5, function() playFinish() end)
 	 end, false))
 end
@@ -316,7 +328,7 @@ function play:keypressed(key)
 
 	if key == "right" or key == "left" and myAnswer == nil then
 		myAnswer = firstToUpper(key) 
-		Timer.during(0.5, function() tamaplay:setTag(correctAnswer) end)
+		tamaplay:setTag(correctAnswer)
 		Timer.after(0.6, function() playFinish() end)
 	end
 end

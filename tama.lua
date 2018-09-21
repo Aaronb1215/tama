@@ -59,12 +59,16 @@ function Tama:update(dt)
 		self:tick()
 	end
 
-	if self.mode == "idle" and self.energy < 30 then
-		self.baby:setTag("Tired")
-	end
-
-	if self.mode == "idle" and self.health < 50 then
+	if self.mode == "idle" and self.health > 50 and self.energy > 30 and self.happiness > 40 then
+		self.baby:setTag("Yes")
+	elseif self.mode == "idle" and self.health < 50 then
 		self.baby:setTag("Unhappy")
+	elseif self.mode == "idle" and self.energy < 30 then
+		self.baby:setTag("Tired")
+	elseif self.mode == "idle" and self.happiness <= 20 then
+		self.baby:setTag("Angry")
+	elseif self.mode == "idle" and self.happiness < 40 and self.happiness > 20 then
+		self.baby:setTag("Depressed")
 	end
 
 
@@ -148,6 +152,7 @@ function Tama:eat(type)
 					self.full = self.full + 5
 					self.health = self.health - 5
 					self:react("Happy")
+					self.happiness = self.happiness + 5
 				elseif food == "broccoli" then
 					self.hunger = self.hunger - 10
 					self.full = self.full + 10
@@ -157,6 +162,7 @@ function Tama:eat(type)
 						self.health = 100
 					end
 					self:react("Annoyed")
+					self.happiness = self.happiness - 5
 				end
 			end)
 	elseif self.hunger < 1 then
@@ -253,14 +259,10 @@ function Tama:tick()
 		self:react("Annoyed") 
 	end
 
-	--TODO: Randomize when the pooping happens.
 	if self.full > 10 and self.mode == "idle" then
 		if math.floor(love.math.random(1, 3)) == 2 then
 			self:poop()
 		end
-		-- if self.mode == "idle" then
-		-- 	self:poop()
-		-- end
 	end
 
 	local previousHealth = self.health
@@ -275,6 +277,7 @@ function Tama:tick()
 	end
 
 	if self.energy < 40 then self.health = self.health - 1 end
+	if self.happiness < 0 then self.health = self.health - 1 end
 
 	--Health ups.
 	if self.health < 100 then
@@ -283,6 +286,14 @@ function Tama:tick()
 	end
 
 	if self.mode == "sleeping" then self.health = self.health + 2 end
+
+	--Happiness--
+	if self.health < 50 then self.happiness = self.happiness - 1 end
+	if self.energy < 50 then self.happiness = self.happiness - 1 end
+	if self.mode == "idle" and not lightOn then self.happiness = self.happiness - 1 end
+	if self.mode == "sleeping" and lightOn then self.happiness = self.happiness - 1 end
+	if #poops > 0 then self.happiness = self.happiness - 2 end
+
 
 
 	--DEATH TRIGGER--
